@@ -32,8 +32,7 @@ After reviewing the first skeleton, I made two small design changes. First, I re
 
 **b. Tradeoffs**
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
+The scheduler uses a lightweight conflict check: it warns only when unfinished tasks have exactly the same `HH:MM` time. It does not yet calculate whether a 30-minute task at 08:00 overlaps a task at 08:15. This keeps the first version easy to read and explain while still catching the most obvious conflict; overlap detection can be added later if the app needs more precise time planning.
 
 ---
 

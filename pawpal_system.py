@@ -1,7 +1,7 @@
-"""Core backend models and scheduling logic for the PawPal+ planner."""
+"""Core backend models and scheduling algorithms for the PawPal+ planner."""
 
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, timedelta
 
 
 @dataclass
@@ -12,6 +12,7 @@ class Task:
     duration_minutes: int
     priority: str = "medium"
     frequency: str = "daily"
+    time: str = "09:00"
     due_date: date | None = None
     completed: bool = False
 
@@ -21,9 +22,10 @@ class Task:
         duration_minutes: int | None = None,
         priority: str | None = None,
         frequency: str | None = None,
+        time: str | None = None,
         due_date: date | None = None,
     ) -> None:
-        """Update only the details supplied by the caller."""
+        """Update only the task details supplied by the caller."""
         if description is not None:
             self.description = description
         if duration_minutes is not None:
@@ -32,6 +34,8 @@ class Task:
             self.priority = priority
         if frequency is not None:
             self.frequency = frequency
+        if time is not None:
+            self.time = time
         if due_date is not None:
             self.due_date = due_date
 
@@ -48,7 +52,27 @@ class Task:
         if self.due_date is not None:
             return self.due_date == current_day
 
-        return self.frequency.lower() == "daily"
+        return self.frequency.lower() in {"daily", "once"}
+
+    def create_next_occurrence(self, today: date | None = None) -> "Task | None":
+        """Create the next copy when this is a daily or weekly task."""
+        current_day = today or date.today()
+        frequency = self.frequency.lower()
+        if frequency == "daily":
+            next_due_date = current_day + timedelta(days=1)
+        elif frequency == "weekly":
+            next_due_date = current_day + timedelta(weeks=1)
+        else:
+            return None
+
+        return Task(
+            description=self.description,
+            duration_minutes=self.duration_minutes,
+            priority=self.priority,
+            frequency=self.frequency,
+            time=self.time,
+            due_date=next_due_date,
+        )
 
 
 @dataclass
@@ -68,6 +92,17 @@ class Pet:
         """Remove a task if it belongs to this pet."""
         if task in self.tasks:
             self.tasks.remove(task)
+
+    def complete_task(self, task: Task, today: date | None = None) -> Task | None:
+        """Complete a task and add its next recurring occurrence, if any."""
+        if task not in self.tasks:
+            return None
+
+        task.mark_complete()
+        next_task = task.create_next_occurrence(today)
+        if next_task is not None:
+            self.add_task(next_task)
+        return next_task
 
 
 @dataclass
@@ -107,7 +142,7 @@ class Scheduler:
     PRIORITY_ORDER = {"high": 0, "medium": 1, "low": 2}
 
     def sort_tasks(self, tasks: list[Task]) -> list[Task]:
-        """Order high-priority, shorter tasks first."""
+        """Order tasks by priority and then duration for plan selection."""
         return sorted(
             tasks,
             key=lambda task: (
@@ -116,20 +151,40 @@ class Scheduler:
             ),
         )
 
-    def filter_tasks(self, tasks: list[Task], today: date | None = None) -> list[Task]:
-        """Keep only tasks that are due and can fit in a daily plan."""
-        return [
-            task
-            for task in tasks
-            if task.duration_minutes > 0 and task.is_due_today(today)
-        ]
+    def sort_by_time(self, tasks: list[Task]) -> list[Task]:
+        """Return tasks ordered by their zero-padded HH:MM time strings."""
+        return sorted(tasks, key=lambda task: task.time)
+
+    def filter_tasks(
+        self,
+        owner: Owner,
+        pet_name: str | None = None,
+        completed: bool | None = None,
+        due_today_only: bool = False,
+        today: date | None = None,
+    ) -> list[Task]:
+        """Filter an owner's tasks by pet, completion state, and due date."""
+        tasks = owner.get_all_tasks()
+        if pet_name is not None:
+            tasks = [
+                task
+                for pet in owner.pets
+                if pet.name == pet_name
+                for task in pet.tasks
+            ]
+        if completed is not None:
+            tasks = [task for task in tasks if task.completed is completed]
+        if due_today_only:
+            tasks = [task for task in tasks if task.is_due_today(today)]
+        return tasks
 
     def create_daily_plan(
         self, owner: Owner, today: date | None = None
     ) -> list[Task]:
-        """Select due tasks across all of an owner's pets within the time limit."""
-        all_owner_tasks = owner.get_all_tasks()
-        due_tasks = self.filter_tasks(all_owner_tasks, today)
+        """Select due tasks across all pets that fit within the time limit."""
+        due_tasks = self.filter_tasks(
+            owner, completed=False, due_today_only=True, today=today
+        )
         ordered_tasks = self.sort_tasks(due_tasks)
 
         plan: list[Task] = []
@@ -138,8 +193,23 @@ class Scheduler:
             if task.duration_minutes <= remaining_time:
                 plan.append(task)
                 remaining_time -= task.duration_minutes
-
         return plan
+
+    def detect_conflicts(self, owner: Owner) -> list[str]:
+        """Return warnings for unfinished tasks assigned to the same time."""
+        tasks_by_time: dict[str, list[str]] = {}
+        for pet in owner.pets:
+            for task in pet.tasks:
+                if not task.completed:
+                    tasks_by_time.setdefault(task.time, []).append(
+                        f"{task.description} for {pet.name}"
+                    )
+
+        return [
+            f"Conflict at {time}: " + "; ".join(task_descriptions)
+            for time, task_descriptions in tasks_by_time.items()
+            if len(task_descriptions) > 1
+        ]
 
     def explain_plan(self, plan: list[Task]) -> str:
         """Explain the rule used to order and select the supplied plan."""

@@ -53,12 +53,24 @@ The terminal demo creates an owner with two pets and generates a prioritized dai
 ```
 Today's Schedule
 ================
-1. Breakfast for Biscuit — 10 min (high priority)
-2. Morning walk for Biscuit — 25 min (high priority)
-3. Playtime for Mochi — 15 min (medium priority)
+Tasks sorted by time
+--------------------
+07:30 — Breakfast (10 min)
+08:00 — Morning walk (25 min)
+08:00 — Playtime (15 min)
+09:30 — Brush coat (20 min)
 
-Total scheduled time: 50 minutes
-Why this plan: Scheduled Breakfast, Morning walk, Playtime because these due tasks have the highest priority and fit within the available time (50 minutes).
+Conflict warnings
+-----------------
+Warning: Conflict at 08:00: Morning walk for Biscuit; Playtime for Mochi
+
+Today's Schedule
+----------------
+07:30 — Breakfast (10 min)
+08:00 — Morning walk (25 min)
+08:00 — Playtime (15 min)
+
+Recurring task: Give medication was completed; the next task is due 2026-10-19.
 ```
 
 ## 🧪 Testing PawPal+
@@ -84,14 +96,12 @@ tests/test_pawpal.py ..
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
-
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting | `Scheduler.sort_by_time()` | Sorts zero-padded `HH:MM` times chronologically with a `lambda` key. |
+| Filtering | `Scheduler.filter_tasks()` | Returns tasks across all pets and optionally narrows them by pet name, completion state, or whether they are due today. |
+| Conflict handling | `Scheduler.detect_conflicts()` | Returns a warning when two or more unfinished tasks share the exact same time. |
+| Recurring tasks | `Pet.complete_task()` and `Task.create_next_occurrence()` | Completes the current task and adds a daily or weekly copy with the next due date. |
 
 ## 📸 Demo Walkthrough
 
