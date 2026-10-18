@@ -52,13 +52,11 @@ I did not keep the original `CareTask` name because the Python implementation us
 
 **a. What you tested**
 
-- What behaviors did you test?
-- Why were these tests important?
+I tested task completion, adding a task to a pet, chronological sorting by time, daily recurrence, and duplicate-time conflict detection. These checks cover the core actions that change data and the scheduler algorithms most likely to produce an incorrect plan.
 
 **b. Confidence**
 
-- How confident are you that your scheduler works correctly?
-- What edge cases would you test next if you had more time?
+I am 4 out of 5 confident in the current scheduler because the core behaviors pass automated tests and the multi-pet demo runs successfully. Next, I would test overlapping task durations, malformed time strings, weekly recurrence on different days, and plans where no task fits in the available time.
 
 ---
 

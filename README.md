@@ -76,22 +76,20 @@ Recurring task: Give medication was completed; the next task is due 2026-10-19.
 ## 🧪 Testing PawPal+
 
 ```bash
-# Run the full test suite:
-pytest
-
-# Run with coverage:
-pytest --cov
+python -m pytest
 ```
 
-Sample test output:
+The suite verifies task completion, adding tasks to pets, chronological task sorting, daily recurrence, and duplicate-time conflict warnings. Based on these focused tests, the current confidence level is **★★★★☆ (4/5)**; future testing should cover overlapping durations and weekly scheduling.
+
+Successful test output:
 
 ```
 ============================= test session starts ==============================
-collected 2 items
+collected 5 items
 
-tests/test_pawpal.py ..
+tests/test_pawpal.py .....
 
-============================== 2 passed in 0.01s ===============================
+============================== 5 passed in 0.01s ===============================
 ```
 
 ## 📐 Smarter Scheduling
