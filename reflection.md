@@ -27,8 +27,7 @@ After reviewing the first skeleton, I made two small design changes. First, I re
 
 **a. Constraints and priorities**
 
-- What constraints does your scheduler consider (for example: time, priority, preferences)?
-- How did you decide which constraints mattered most?
+The scheduler considers whether a task is unfinished and due, each task's priority, its duration, and both the owner's and scheduler's available time. It first orders tasks from high to low priority, using shorter duration as a tie-breaker, then adds only tasks that fit in the remaining time. Time availability and task priority mattered most because they directly answer the owner's need to complete the most important care within a limited day.
 
 **b. Tradeoffs**
 
@@ -40,11 +39,11 @@ The scheduler uses a lightweight conflict check: it warns only when unfinished t
 
 **a. How you used AI**
 
-I used AI to brainstorm the UML classes, turn that design into dataclass skeletons, and review the relationships between the classes before implementing them. The most useful prompt was asking how the Scheduler should retrieve tasks from an Owner with multiple pets. It led to the `Owner.get_all_tasks()` method and kept the Scheduler focused on planning rather than storing pet data.
+I used AI for design brainstorming, class scaffolding, algorithm suggestions, documentation, and test drafting. The most effective features were targeted code review and automatic editing: reviewing the class relationships led to `Owner.get_all_tasks()`, and focused prompts helped turn the requirements into small methods such as `sort_by_time()` and `detect_conflicts()`. I treated each project phase as a separate, focused work context; that kept planning, implementation, testing, and documentation prompts from becoming mixed together.
 
 **b. Judgment and verification**
 
-I did not keep the original `CareTask` name because the Python implementation used the simpler `Task` name. I updated the UML and reflection so every artifact used the same name. I also accepted the suggestion to add a due date, but kept it optional to avoid making every recurring daily task require a date. I verified the design by running the terminal demo with two pets and by adding automated tests for task completion and task addition.
+I rejected the more complicated idea of calculating every possible overlapping duration immediately. Instead, I kept conflict detection to exact `HH:MM` matches because its warning is easy for a pet owner to understand and the method stays small. I also renamed `CareTask` to `Task` so the diagram and code used a single, clean vocabulary. I verified these choices by running the multi-pet CLI demo and by testing completion, recurrence, sorting, and conflict warnings.
 
 ---
 
@@ -64,12 +63,12 @@ I am 4 out of 5 confident in the current scheduler because the core behaviors pa
 
 **a. What went well**
 
-- What part of this project are you most satisfied with?
+I am most satisfied with the way the four classes work together without duplicating responsibilities: Pets own tasks, Owners aggregate them, and the Scheduler makes planning decisions. That separation made it straightforward to use the same logic in both the terminal demo and Streamlit UI.
 
 **b. What you would improve**
 
-- If you had another iteration, what would you improve or redesign?
+In another iteration, I would validate time input more carefully, detect overlapping durations rather than only identical times, and let the user mark tasks complete directly in the UI. I would also add persistent storage so pets and tasks survive beyond one Streamlit session.
 
 **c. Key takeaway**
 
-- What is one important thing you learned about designing systems or working with AI on this project?
+I learned that I am the lead architect even when AI writes much of the first draft. AI was strongest at proposing options and speeding up routine code, but I needed to choose the scope, keep the class relationships simple, check that the UML matched the code, and verify behavior with real tests and demos.

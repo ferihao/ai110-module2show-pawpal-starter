@@ -26,6 +26,14 @@ Your final app should:
 
 PawPal+ uses four Python classes in [pawpal_system.py](./pawpal_system.py). `Task` stores a care activity and its scheduling details, while `Pet` owns its list of tasks. `Owner` manages multiple pets and combines all of their tasks through `get_all_tasks()`. `Scheduler` reads that combined task list, filters unfinished tasks that are due, prioritizes them, and creates a plan that fits the owner's available time.
 
+## Features
+
+- Multi-pet planning: one owner can manage tasks for any number of pets.
+- Time sorting: tasks display in chronological `HH:MM` order.
+- Smart daily plans: due, incomplete tasks are prioritized and selected within the available time.
+- Conflict warnings: exact-time collisions are highlighted before a schedule is generated.
+- Recurring care: completing a daily or weekly task creates the next occurrence automatically.
+
 ## Getting started
 
 ### Setup
@@ -101,14 +109,23 @@ tests/test_pawpal.py .....
 | Conflict handling | `Scheduler.detect_conflicts()` | Returns a warning when two or more unfinished tasks share the exact same time. |
 | Recurring tasks | `Pet.complete_task()` and `Task.create_next_occurrence()` | Completes the current task and adds a daily or weekly copy with the next due date. |
 
-## 📸 Demo Walkthrough
+## Demo Walkthrough
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+1. Enter the owner name and the amount of time available today.
+2. Add one or more pets, including optional care notes.
+3. Add a task to a pet with a time, duration, priority, and frequency. The current-task table stays sorted by time.
+4. If two unfinished tasks use the same time, PawPal+ shows a warning that identifies both tasks and suggests moving one of them.
+5. Select **Generate schedule** to see due tasks chosen by priority within the available time; the displayed plan is sorted chronologically for readability.
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+The terminal demonstration in [main.py](./main.py) exercises the same behavior:
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
+```
+Tasks sorted by time
+--------------------
+07:30 — Breakfast (10 min)
+08:00 — Morning walk (25 min)
+08:00 — Playtime (15 min)
+
+Warning: Conflict at 08:00: Morning walk for Biscuit; Playtime for Mochi
+Recurring task: Give medication was completed; the next task is due 2026-10-19.
+```

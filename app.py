@@ -24,6 +24,7 @@ if "owner" not in st.session_state:
 owner = st.session_state.owner
 owner.name = owner_name
 owner.available_time_minutes = int(available_time)
+scheduler = Scheduler(available_time_minutes=owner.available_time_minutes)
 
 st.divider()
 st.subheader("Add a pet")
@@ -79,10 +80,14 @@ if owner.pets:
 
     all_tasks = owner.get_all_tasks()
     if all_tasks:
-        st.markdown("**Current tasks**")
-        st.table(
+        pet_names = {
+            id(task): pet.name for pet in owner.pets for task in pet.tasks
+        }
+        st.markdown("**Current tasks (sorted by time)**")
+        st.dataframe(
             [
                 {
+                    "Pet": pet_names[id(task)],
                     "Task": task.description,
                     "Time": task.time,
                     "Minutes": task.duration_minutes,
@@ -90,21 +95,28 @@ if owner.pets:
                     "Frequency": task.frequency,
                     "Complete": task.completed,
                 }
-                for task in all_tasks
-            ]
+                for task in scheduler.sort_by_time(all_tasks)
+            ],
+            use_container_width=True,
+            hide_index=True,
         )
+
+        conflicts = scheduler.detect_conflicts(owner)
+        if conflicts:
+            st.markdown("**Scheduling conflicts**")
+            for warning in conflicts:
+                st.warning(f"{warning}. Move one task to another time.")
 
 st.divider()
 st.subheader("Today's Schedule")
 if st.button("Generate schedule", disabled=not owner.pets):
-    scheduler = Scheduler(available_time_minutes=owner.available_time_minutes)
     plan = owner.request_daily_plan(scheduler)
 
     if plan:
         pet_names = {
             id(task): pet.name for pet in owner.pets for task in pet.tasks
         }
-        for position, task in enumerate(plan, start=1):
+        for position, task in enumerate(scheduler.sort_by_time(plan), start=1):
             st.write(
                 f"{position}. **{task.description}** for {pet_names[id(task)]} "
                 f"— {task.duration_minutes} minutes ({task.priority} priority)"
@@ -112,6 +124,3 @@ if st.button("Generate schedule", disabled=not owner.pets):
         st.caption(scheduler.explain_plan(plan))
     else:
         st.info("No due tasks fit within the available time.")
-
-    for warning in scheduler.detect_conflicts(owner):
-        st.warning(warning)

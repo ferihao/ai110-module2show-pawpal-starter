@@ -1,0 +1,51 @@
+classDiagram
+    class Owner {
+        +String name
+        +Integer available_time_minutes
+        +String preferences
+        +List~Pet~ pets
+        +add_pet(pet) None
+        +update_preferences(preferences) None
+        +get_all_tasks() List~Task~
+        +request_daily_plan(scheduler, today) List~Task~
+    }
+
+    class Pet {
+        +String name
+        +String species
+        +String care_needs
+        +List~Task~ tasks
+        +add_task(task) None
+        +remove_task(task) None
+        +complete_task(task, today) Task
+    }
+
+    class Task {
+        +String description
+        +Integer duration_minutes
+        +String priority
+        +String frequency
+        +String time
+        +Date due_date
+        +Boolean completed
+        +update_details() None
+        +mark_complete() None
+        +is_due_today(today) Boolean
+        +create_next_occurrence(today) Task
+    }
+
+    class Scheduler {
+        +Integer available_time_minutes
+        +sort_tasks(tasks) List~Task~
+        +sort_by_time(tasks) List~Task~
+        +filter_tasks(owner, pet_name, completed, due_today_only, today) List~Task~
+        +create_daily_plan(owner, today) List~Task~
+        +detect_conflicts(owner) List~String~
+        +explain_plan(plan) String
+    }
+
+    Owner "1" *-- "0..*" Pet : owns
+    Pet "1" *-- "0..*" Task : contains
+    Owner --> Scheduler : requests plan
+    Scheduler ..> Owner : reads all tasks
+    Scheduler ..> Task : sorts, filters, and checks
