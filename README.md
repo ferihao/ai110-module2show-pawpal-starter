@@ -22,6 +22,10 @@ Your final app should:
 - Display the plan clearly (and ideally explain the reasoning)
 - Include tests for the most important scheduling behaviors
 
+## Implementation Summary
+
+PawPal+ uses four Python classes in [pawpal_system.py](./pawpal_system.py). `Task` stores a care activity and its scheduling details, while `Pet` owns its list of tasks. `Owner` manages multiple pets and combines all of their tasks through `get_all_tasks()`. `Scheduler` reads that combined task list, filters unfinished tasks that are due, prioritizes them, and creates a plan that fits the owner's available time.
+
 ## Getting started
 
 ### Setup
@@ -44,14 +48,17 @@ pip install -r requirements.txt
 
 ## 🖥️ Sample Output
 
-Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
+The terminal demo creates an owner with two pets and generates a prioritized daily plan:
 
 ```
-# e.g.:
-# Daily plan for Biscuit (Golden Retriever):
-#   08:00 — Morning walk (30 min) [priority: high]
-#   09:00 — Feeding (10 min) [priority: high]
-#   ...
+Today's Schedule
+================
+1. Breakfast for Biscuit — 10 min (high priority)
+2. Morning walk for Biscuit — 25 min (high priority)
+3. Playtime for Mochi — 15 min (medium priority)
+
+Total scheduled time: 50 minutes
+Why this plan: Scheduled Breakfast, Morning walk, Playtime because these due tasks have the highest priority and fit within the available time (50 minutes).
 ```
 
 ## 🧪 Testing PawPal+
@@ -67,7 +74,12 @@ pytest --cov
 Sample test output:
 
 ```
-# Paste your pytest output here
+============================= test session starts ==============================
+collected 2 items
+
+tests/test_pawpal.py ..
+
+============================== 2 passed in 0.01s ===============================
 ```
 
 ## 📐 Smarter Scheduling

@@ -4,13 +4,22 @@
 
 **a. Initial design**
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+The initial design centers on three core user actions:
+
+- A pet owner can add their pet's basic information, such as the pet's name and care needs, so the app can personalize the plan.
+- A pet owner can create and update care tasks—for example, walks, meals, medication, or grooming—and give each task a duration and priority.
+- A pet owner can view a generated plan for today that fits the available time, highlights the most important tasks, and explains why those tasks were selected.
+
+The initial UML design would use these main objects:
+
+- **Owner** holds the owner's name, available time, and preferences. It can add pets, update preferences, and request a daily plan.
+- **Pet** holds a pet's name, species, and care needs. It can keep track of its care tasks and add or remove a task.
+- **Task** holds a description, duration, priority, frequency, optional due date, and completion status. It can be edited, marked complete, and checked for whether it is due today.
+- **Scheduler** holds the available time. It gets every task from the Owner, then sorts and filters them, creates a schedule that fits the time available, and explains why tasks were included or left out.
 
 **b. Design changes**
 
-- Did your design change during implementation?
-- If yes, describe at least one change and why you made it.
+After reviewing the first skeleton, I made two small design changes. First, I renamed the UML class from `CareTask` to `Task` so the diagram, reflection, and Python code use the same name. Second, I added an optional due date to `Task`, because recurrence alone cannot represent one-time or date-specific care such as a vet medication. I also made `Owner.request_daily_plan` accept a `Scheduler`; this makes the relationship explicit and avoids making the Owner class responsible for scheduling logic.
 
 ---
 
@@ -32,13 +41,11 @@
 
 **a. How you used AI**
 
-- How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
-- What kinds of prompts or questions were most helpful?
+I used AI to brainstorm the UML classes, turn that design into dataclass skeletons, and review the relationships between the classes before implementing them. The most useful prompt was asking how the Scheduler should retrieve tasks from an Owner with multiple pets. It led to the `Owner.get_all_tasks()` method and kept the Scheduler focused on planning rather than storing pet data.
 
 **b. Judgment and verification**
 
-- Describe one moment where you did not accept an AI suggestion as-is.
-- How did you evaluate or verify what the AI suggested?
+I did not keep the original `CareTask` name because the Python implementation used the simpler `Task` name. I updated the UML and reflection so every artifact used the same name. I also accepted the suggestion to add a due date, but kept it optional to avoid making every recurring daily task require a date. I verified the design by running the terminal demo with two pets and by adding automated tests for task completion and task addition.
 
 ---
 
